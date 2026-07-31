@@ -1,0 +1,54 @@
+{
+  "info": {
+    "_postman_id": "47fc5696-1928-4346-9a5b-eb65f4c235d9",
+    "name": "Data-Driven Testing",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "44780916",
+    "_collection_link": "https://go.postman.co/collection/44780916-47fc5696-1928-4346-9a5b-eb65f4c235d9?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Get Post by ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 200 OK\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Sprawdzenie poprawnego tytulu z pliku CSV\", function () {\r",
+              "    var responseData = pm.response.json();\r",
+              "    var expectedTitle = pm.iterationData.get(\"expectedTitle\");\r",
+              "    \r",
+              "    pm.expect(responseData.title).to.eql(expectedTitle);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://jsonplaceholder.typicode.com/posts/{{postId}}",
+          "protocol": "https",
+          "host": [
+            "jsonplaceholder",
+            "typicode",
+            "com"
+          ],
+          "path": [
+            "posts",
+            "{{postId}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
