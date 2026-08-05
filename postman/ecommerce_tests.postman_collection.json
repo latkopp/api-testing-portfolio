@@ -1,0 +1,301 @@
+{
+  "info": {
+    "_postman_id": "e1f06ecf-1ee9-46fd-91be-dd80ad90bfe1",
+    "name": "E-Commerce",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "44780916",
+    "_collection_link": "https://go.postman.co/collection/44780916-e1f06ecf-1ee9-46fd-91be-dd80ad90bfe1?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "01. Pobierz listę produktów",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Sprawdzamy, czy serwer odpowiedział kodem 200\r",
+              "pm.test(\"Status odpowiedzi to 200 OK\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "// Sprawdzamy, czy odpowiedź przyszła w czasie poniżej 1000 ms\r",
+              "pm.test(\"Czas odpowiedzi jest krótszy niż 1s\", function () {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/products?limit=5",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "products"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "5"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "02. Zaloguj i pobierz token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. Parsujemy odpowiedź z formatu JSON do obiektu JavaScript\r",
+              "const responseData = pm.response.json();\r",
+              "\r",
+              "// 2. Pobieramy 'access_token' i zapisujemy go do zmiennej środowiskowej 'accessToken'\r",
+              "pm.environment.set(\"accessToken\", responseData.access_token);\r",
+              "\r",
+              "// 3. Test sprawdzający, czy status to 201 Created oraz czy token w ogóle przyszedł\r",
+              "pm.test(\"Logowanie udane i token pobrany\", function () {\r",
+              "    pm.response.to.have.status(201);\r",
+              "    pm.expect(responseData.access_token).to.be.a('string');\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"john@mail.com\",\r\n  \"password\": \"changeme\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "03. Dodaj nowy produkt",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. Zamieniamy odpowiedź z JSON na obiekt\r",
+              "const responseData = pm.response.json();\r",
+              "\r",
+              "// 2. Zapisujemy wygenerowane ID produktu do zmiennej środowiskowej\r",
+              "pm.environment.set(\"productId\", responseData.id);\r",
+              "\r",
+              "// 3. Test sprawdzający poprawność utworzenia\r",
+              "pm.test(\"Produkt został pomyślnie utworzony\", function () {\r",
+              "    pm.response.to.have.status(201);\r",
+              "    pm.expect(responseData).to.have.property('id');\r",
+              "    pm.expect(responseData.title).to.eql(pm.environment.get(\"randomProductName\"));\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Generujemy losowy numer i zapisujemy dynamiczną nazwę produktu\r",
+              "const randomId = Math.floor(Math.random() * 100000);\r",
+              "pm.environment.set(\"randomProductName\", \"Produkt QA \" + randomId);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"title\": \"{{randomProductName}}\",\r\n  \"price\": 199,\r\n  \"description\": \"Opis produktu stworzonego automatycznie przez skrypt\",\r\n  \"categoryId\": 1,\r\n  \"images\": [\"https://placeimg.com/640/480/any\"]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/products/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "products",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "04. Pobierz szczegóły utworzonego produktu",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const responseData = pm.response.json();\r",
+              "\r",
+              "// 1. Sprawdzamy status 200 OK\r",
+              "pm.test(\"Status odpowiedzi to 200 OK\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "// 2. Sprawdzamy, czy ID zgadza się z tym, które zapamiętaliśmy wcześniej\r",
+              "pm.test(\"Pobrany produkt ma poprawne ID\", function () {\r",
+              "    pm.expect(responseData.id).to.eql(pm.environment.get(\"productId\"));\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/products/{{productId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "products",
+            "{{productId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "05. Usuń stworzony produkt",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status odpowiedzi to 200 OK (produkt usuniety)\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Odpowiedź zwraca 'true'\", function () {\r",
+              "    var responseData = pm.response.json();\r",
+              "    pm.expect(responseData).to.be.true;\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "https://api.escuelajs.co/api/v1/products/{{productId}}",
+          "protocol": "https",
+          "host": [
+            "api",
+            "escuelajs",
+            "co"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "products",
+            "{{productId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "06. Sprawdź czy produkt został usunięty",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Produkt nie istnieje (Status 400 lub 404)\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([400, 404]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://api.escuelajs.co/api/v1/products/{{productId}}",
+          "protocol": "https",
+          "host": [
+            "api",
+            "escuelajs",
+            "co"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "products",
+            "{{productId}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
