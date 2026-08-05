@@ -1,0 +1,31 @@
+name: Automated API Tests (Newman)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  run-postman-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Pobranie kodu z repozytorium
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      # 2. Przygotowanie środowiska Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 3. Instalacja Newmana
+      - name: Install Newman
+        run: npm install -g newman
+
+      # 4. Uruchomienie testów Postman za pomocą Newmana
+      - name: Run E2E Postman Tests
+        run: |
+          newman run postman/ecommerce_tests.postman_collection.json -e postman/ecommerce_dev.postman_environment.json
