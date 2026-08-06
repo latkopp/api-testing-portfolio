@@ -1,4 +1,5 @@
 import { Page, Locator, expect } from '@playwright/test';
+
 export class LoginPage {
   readonly page: Page;
   readonly usernameInput: Locator;
@@ -15,7 +16,7 @@ export class LoginPage {
   }
 
   async goto() {
-    await this.page.goto('https://pracnique.github.io/practice-login/');
+    await this.page.goto('https://practicetestautomation.com/practice-test-login/');
   }
 
   async login(username: string, password: string) {
