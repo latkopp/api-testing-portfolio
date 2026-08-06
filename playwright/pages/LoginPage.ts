@@ -27,3 +27,5 @@ export class LoginPage {
   async verifyErrorMessage(expectedText: string) {
     await expect(this.errorMessage).toBeVisible();
     await expect(this.errorMessage).toContainText(expectedText);
+  }
+}
