@@ -1,4 +1,4 @@
-name: Automated API Tests (Newman)
+name: Automated API & UI Tests
 
 on:
   push:
@@ -7,25 +7,40 @@ on:
     branches: [ main ]
 
 jobs:
-  run-postman-tests:
+  run-all-tests:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Pobranie kodu z repozytorium
-      - name: Checkout repository code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Przygotowanie środowiska Node.js
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: 24
 
-      # 3. Instalacja Newmana
-      - name: Install Newman
-        run: npm install -g newman
-
-      # 4. Uruchomienie testów Postman za pomocą Newmana
-      - name: Run E2E Postman Tests
+      - name: Install dependencies
         run: |
-          newman run postman/ecommerce_tests.postman_collection.json -e postman/ecommerce_dev.postman_environment.json
+          npm ci || npm install
+
+      # Krok 1: Testy Postman / Newman
+      - name: Run Postman API Tests via Newman
+        run: |
+          npx newman run postman/ecommerce_tests.postman_collection.json -e postman/ecommerce_dev.postman_environment.json
+          npx newman run postman/data_driven_tests.postman_collection.json -d postman/test_data.csv -e postman/ecommerce_dev.postman_environment.json
+
+      # Krok 2: Testy Playwright (API + UI POM)
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright Tests
+        run: npx playwright test
+
+      # Krok 3: Zapisanie raportu Playwright jako artefakt
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
