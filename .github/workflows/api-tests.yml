@@ -17,24 +17,28 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24
-
-      - name: Install dependencies
-        run: |
-          npm ci || npm install
+          node-version: 20
 
       # Krok 1: Testy Postman / Newman
+      - name: Install Newman
+        run: npm install newman
+
       - name: Run Postman API Tests via Newman
         run: |
           npx newman run postman/ecommerce_tests.postman_collection.json -e postman/ecommerce_dev.postman_environment.json
           npx newman run postman/data_driven_tests.postman_collection.json -d postman/test_data.csv -e postman/ecommerce_dev.postman_environment.json
 
-      # Krok 2: Testy Playwright (API + UI POM)
+      # Krok 2: Instalacja i uruchomienie Playwright
+      - name: Install Playwright Dependencies
+        run: |
+          npm install @playwright/test
+          if [ -d "playwright" ]; then cd playwright && npm install; fi
+
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
       - name: Run Playwright Tests
-        run: npx playwright test
+        run: npx playwright test playwright/tests
 
       # Krok 3: Zapisanie raportu Playwright jako artefakt
       - name: Upload Playwright Report
@@ -42,5 +46,8 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
-          path: playwright-report/
+          path: |
+            playwright-report/
+            playwright/playwright-report/
           retention-days: 7
+
