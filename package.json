@@ -1,28 +1,18 @@
 {
   "name": "api-testing-portfolio",
   "version": "1.0.0",
-  "description": "![API Tests](https://github.com/latkopp/api-testing-portfolio/actions/workflows/api-tests.yml/badge.svg) ![Postman](https://img.shields.io/badge/Postman-FF6C37?style=flat&logo=postman&logoColor=white) ![NodeJS](https://img.shields.io/badge/Node.js-339933?style=flat&logo=nodedotjs&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=githubactions&logoColor=white)",
+  "description": "API & UI Automation Portfolio",
   "main": "index.js",
-  "directories": {
-    "test": "tests"
-  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "playwright test",
+    "lint": "eslint ."
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/latkopp/api-testing-portfolio.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/latkopp/api-testing-portfolio/issues"
-  },
-  "homepage": "https://github.com/latkopp/api-testing-portfolio#readme",
   "devDependencies": {
-    "@playwright/test": "^1.62.1",
-    "newman": "^6.2.2"
+    "@playwright/test": "^1.40.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.56.0",
+    "eslint-plugin-playwright": "^1.5.0",
+    "newman": "^6.1.0"
   }
 }
