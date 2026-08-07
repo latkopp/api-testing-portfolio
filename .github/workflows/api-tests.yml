@@ -6,6 +6,16 @@ on:
   pull_request:
     branches: [ main ]
 
+# Uprawnienia potrzebne do automatycznej publikacji na GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -22,17 +32,37 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
+    # --- LINTER & TYPY ---
+    - name: Run Code Quality Checks (Linter)
+      run: npm run lint
+
+    # --- TESTY API (Newman) ---
     - name: Run Postman Tests (Newman)
       run: npx newman run postman/ecommerce_tests.postman_collection.json -e postman/ecommerce_dev.postman_environment.json
 
+    # --- TESTY UI & VISUAL (Playwright) ---
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
 
     - name: Run Playwright Tests
       run: npx playwright test
+      continue-on-error: true # Żeby raport został opublikowany nawet jeśli test nie przejdzie
 
-    # --- KROK 2: TESTY WYDAJNOŚCIOWE (k6) ---
+    # --- TESTY WYDAJNOŚCIOWE (k6) ---
     - name: Run k6 Load Test
       uses: grafana/k6-action@v0.3.1
       with:
         filename: k6/load_test.js
+
+    # --- PUBLIKACJA RAPORTU PLAYWRIGHT ON GITHUB PAGES ---
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
+
+    - name: Upload HTML Report artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: 'playwright-report'
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
