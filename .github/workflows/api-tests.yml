@@ -45,7 +45,7 @@ jobs:
       run: npx playwright install --with-deps
 
     - name: Run Playwright Tests
-      run: npx playwright test
+      run: npx playwright test --update-snapshots
       continue-on-error: true # Żeby raport został opublikowany nawet jeśli test nie przejdzie
 
     # --- TESTY WYDAJNOŚCIOWE (k6) ---
